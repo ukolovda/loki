@@ -1,4 +1,22 @@
 FROM golang:1.15.3 as build
+
+# build golang environment
+ENV PROTOC_VER 3.14.0
+
+RUN apt-get update && \
+    apt-get install -y apt-utils \
+                       zip \
+                       unzip && \
+    wget -q -P /tmp/temp/ https://github.com/protocolbuffers/protobuf/releases/download/v${PROTOC_VER}/protoc-${PROTOC_VER}-linux-x86_64.zip && \
+    cd /usr && \
+    unzip /tmp/temp/protoc-${PROTOC_VER}-linux-x86_64.zip
+
+RUN go env -w GO111MODULE=on && \
+    go get -u github.com/gogo/protobuf/proto \
+              github.com/gogo/protobuf/protoc-gen-gogoslick && \
+    rm -rf /var/lib/apt/lists/* \
+           /tmp/temp/
+
 # TOUCH_PROTOS signifies if we should touch the compiled proto files and thus not regenerate them.
 # This is helpful when file system timestamps can't be trusted with make
 ARG TOUCH_PROTOS
